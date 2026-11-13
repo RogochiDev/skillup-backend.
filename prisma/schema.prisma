@@ -1,0 +1,16 @@
+// use prisma-8
+
+enum Role {
+  STUDENT
+  ADMIN
+}
+
+model User {
+  id        Int                @id @default(autoincrement())
+  email     String             @unique
+  password  String
+  name      String
+  role      Role               @default(STUDENT)
+  createdAt DateTime           @default(now()) @onCreate(now())
+  updatedAt temporal.UpdatedAt
+}
