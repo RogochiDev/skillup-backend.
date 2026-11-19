@@ -37,3 +37,41 @@ Plataforma EdTech desarrollada con **Node.js, Express, PostgreSQL, JWT y Bcrypt*
 - **POST** `/api/courses` -> Crea un curso nuevo (Protegido: requiere Token + Rol `ADMIN`).
 - **PUT** `/api/courses/:id` -> Edita un curso existente (Protegido: requiere Token + Rol `ADMIN`).
 - **DELETE** `/api/courses/:id` -> Elimina un curso (Protegido: requiere Token + Rol `ADMIN`).
+
+
+## Esquema de Base de Datos (PostgreSQL - `skillup_db`)
+
+### 1. Tabla `User` (Estudiantes y Administradores)
+
+| Campo | Tipo | Descripción |
+| :--- | :--- | :--- |
+| `id` | `Integer` (PK) | Identificador único autoincremental |
+| `email` | `String` (Único) | Correo electrónico del usuario |
+| `password` | `String` | Contraseña encriptada con `bcryptjs` |
+| `name` | `String` | Nombre completo del usuario |
+| `role` | `String` | Rol de acceso (`STUDENT` o `ADMIN`) |
+| `createdAt` | `DateTime` | Fecha de registro |
+| `updatedAt` | `DateTime` | Fecha de última actualización |
+
+### 2. Tabla `Course` (Catálogo de Cursos)
+
+| Campo | Tipo | Descripción |
+| :--- | :--- | :--- |
+| `id` | `Integer` (PK) | Identificador único autoincremental |
+| `title` | `String` | Título del curso |
+| `description` | `String` | Descripción detallada |
+| `instructor` | `String` | Nombre del profesor/instructor |
+| `duration` | `String` | Duración estimada (ej. `"8 semanas"`) |
+| `level` | `String` | Nivel del curso (`Inicial`, `Intermedio`, `Avanzado`) |
+| `createdAt` | `DateTime` | Fecha de creación |
+| `updatedAt` | `DateTime` | Fecha de última actualización |
+
+### 3. Tabla `Enrollment` (Inscripciones — Relación `N:M`)
+*Tabla intermedia que conecta a los estudiantes (`User`) con los cursos (`Course`). Restricción única compuesta `[userId, courseId]` para evitar inscripciones duplicadas.*
+
+| Campo | Tipo | Descripción |
+| :--- | :--- | :--- |
+| `id` | `Integer` (PK) | Identificador único autoincremental |
+| `userId` | `Integer` (FK) | Referencia a `User.id` |
+| `courseId` | `Integer` (FK) | Referencia a `Course.id` |
+| `enrolledAt` | `DateTime` | Fecha y hora de inscripción |
