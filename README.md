@@ -1,6 +1,6 @@
-# SkillUp Campus - Backend API (Semanas 1 - 3)
+# SkillUp Campus - Backend API (Semanas 1 - 4)
 
-Plataforma EdTech desarrollada con **Node.js, Express y PostgreSQL**.
+Plataforma EdTech desarrollada con **Node.js, Express, PostgreSQL, JWT y Bcrypt**.
 
 ## Requisitos Previos
 - Node.js (v18 o superior)
@@ -22,38 +22,18 @@ Plataforma EdTech desarrollada con **Node.js, Express y PostgreSQL**.
    npm run dev
    ```
 
-## Contratos de API y Endpoints Disponibles
+## Documentación de Endpoints (Colección Postman en `docs/api/`)
 
 ### 1. Estado del Servidor
 - **GET** `/` -> Verifica que el servidor Express esté activo.
 
-### 2. Registro de Usuarios (Implementación Real - Semana 3)
-- **POST** `/api/auth/register`
-- **Body (JSON):**
-  ```json
-  {
-    "name": "Rodolfo Estudiante",
-    "email": "rodolfo@skillup.com",
-    "password": "Password123!"
-  }
-  ```
-- **Respuesta (`201 Created`):**
-  ```json
-  {
-    "message": "Usuario creado exitosamente",
-    "user": {
-      "id": 1,
-      "name": "Rodolfo Estudiante",
-      "email": "rodolfo@skillup.com",
-      "role": "STUDENT"
-    }
-  }
-  ```
+### 2. Autenticación (`/api/auth`)
+- **POST** `/api/auth/register` -> Registro de nuevos usuarios con contraseña encriptada (`bcryptjs`).
+- **POST** `/api/auth/login` -> Inicio de sesión real; valida credenciales y devuelve un **Token JWT** (expiración `24h`, payload `{ id, role }`).
 
-### 3. Login de Usuarios (Contrato Mock para Frontend - Semana 2)
-- **POST** `/api/auth/login`
-- **Respuesta (`200 OK`):** Devuelve estructura estándar con `token` JWT y datos de usuario.
-
-### 4. Catálogo de Cursos (Contrato Mock para Frontend - Semana 2)
-- **GET** `/api/courses`
-- **Respuesta (`200 OK`):** Devuelve listado JSON de cursos disponibles para maquetación de Frontend.
+### 3. Gestión de Cursos (`/api/courses`)
+- **GET** `/api/courses` -> Lista todos los cursos disponibles (Público).
+- **GET** `/api/courses/:id` -> Obtiene el detalle de un curso específico (Público).
+- **POST** `/api/courses` -> Crea un curso nuevo (Protegido: requiere Token + Rol `ADMIN`).
+- **PUT** `/api/courses/:id` -> Edita un curso existente (Protegido: requiere Token + Rol `ADMIN`).
+- **DELETE** `/api/courses/:id` -> Elimina un curso (Protegido: requiere Token + Rol `ADMIN`).

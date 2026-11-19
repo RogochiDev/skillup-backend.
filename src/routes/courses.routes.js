@@ -1,26 +1,22 @@
 const express = require('express');
 const router = express.Router();
+const auth = require('../middlewares/auth');
+const admin = require('../middlewares/admin');
+const {
+  getAllCourses,
+  getCourseById,
+  createCourse,
+  updateCourse,
+  deleteCourse,
+} = require('../controllers/courses.controller');
 
-// Contrato Mock de catálogo de cursos para Frontend (Semana 2)
-router.get('/', (req, res) => {
-  res.status(200).json([
-    {
-      id: 1,
-      title: 'Desarrollo Web Full Stack con Node.js y React',
-      description: 'Aprende a construir aplicaciones web completas desde cero.',
-      instructor: 'Prof. Carlos Mendoza',
-      duration: '8 semanas',
-      level: 'Intermedio',
-    },
-    {
-      id: 2,
-      title: 'Bases de Datos Relacionales con PostgreSQL',
-      description: 'Domina el modelado de datos, consultas SQL y optimización.',
-      instructor: 'Prof. Laura Gómez',
-      duration: '4 semanas',
-      level: 'Inicial',
-    },
-  ]);
-});
+// Rutas Públicas (Cualquier visitante o estudiante puede ver el catálogo)
+router.get('/', getAllCourses);
+router.get('/:id', getCourseById);
+
+// Rutas Protegidas (Requieren Token válido + Rol Administrador)
+router.post('/', auth, admin, createCourse);
+router.put('/:id', auth, admin, updateCourse);
+router.delete('/:id', auth, admin, deleteCourse);
 
 module.exports = router;

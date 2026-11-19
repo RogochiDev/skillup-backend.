@@ -1,7 +1,8 @@
 const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
 const { pool } = require('../config/prisma');
 
-// Registro real en PostgreSQL (Semana 3)
+// Registro de Usuario (Semana 3)
 const register = async (req, res) => {
   try {
     const { email, password, name } = req.body;
@@ -32,7 +33,7 @@ const register = async (req, res) => {
       [name, email, hashedPassword]
     );
 
-    const newUser = insertResult.rows;
+    const newUser = insertResult.rows[0];
 
     res.status(201).json({
       message: 'Usuario creado exitosamente',
@@ -44,19 +45,56 @@ const register = async (req, res) => {
   }
 };
 
-// Contrato Mock de Login para Frontend (Semana 2)
-const loginMock = (req, res) => {
-  const { email } = req.body;
-  res.status(200).json({
-    message: 'Login simulado exitoso (Contrato API)',
-    token: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.mock_token_skillup',
-    user: {
-      id: 1,
-      name: 'Rodolfo Estudiante',
-      email: email || 'rodolfo@skillup.com',
-      role: 'STUDENT',
-    },
-  });
+// Login Real con JWT (Semana 4)
+const login = async (req, res) => {
+  try {
+    const { email, password } = req.body;
+
+    if (!email || !password) {
+      return res.status(400).json({ 
+        error: 'Debes ingresar email y password' 
+      });
+    }
+
+    // 1. Buscar usuario por email en PostgreSQL
+    const result = await pool.query(
+      'SELECT id, name, email, password, role FROM "User" WHERE email = $1 LIMIT 1',
+      [email]
+    );
+
+    const user = result.rows[0];
+    if (!user) {
+      return res.status(401).json({ error: 'Credenciales inválidas' });
+    }
+
+    // 2. Comparar contraseña enviada contra el hash guardado en BD
+    const isValidPassword = await bcrypt.compare(password, user.password);
+    if (!isValidPassword) {
+      return res.status(401).json({ error: 'Credenciales inválidas' });
+    }
+
+    // 3. Generar Token JWT con expiración de 24h y payload { id, role }
+    const token = jwt.sign(
+      { id: user.id, role: user.role },
+      process.env.JWT_SECRET,
+      { expiresIn: '24h' }
+    );
+
+    // 4. Responder con el token y datos básicos (sin password)
+    res.status(200).json({
+      message: 'Inicio de sesión exitoso',
+      token,
+      user: {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+      },
+    });
+  } catch (error) {
+    console.error('Error en login:', error);
+    res.status(500).json({ error: 'Error interno al iniciar sesión' });
+  }
 };
 
-module.exports = { register, loginMock };
+module.exports = { register, login };
